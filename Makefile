@@ -45,56 +45,20 @@ update-branch:
 
 # ===========================
 # Connexion à Hugging Face (préparation)
-# ===========================
+
 hf-login:
 	git pull origin update
 	git switch update
 	pip install -U "huggingface_hub"
 
 # ===========================
-# Déploiement sur Hugging Face Space (sans CLI, via API Python)
+# Déploiement sur Hugging Face Space
 # ===========================
 push-hub:
-	python - << 'EOF'
-	import os
-	from huggingface_hub import upload_folder
+	python deploy_to_hf.py
 
-	repo_id = "asmaegr50/Heart_Disease_Classification"
-	token = os.environ["HF"]
-
-	# Upload du dossier App (app Gradio)
-	upload_folder(
-	    repo_id=repo_id,
-	    repo_type="space",
-	    folder_path="App",
-	    path_in_repo=".",
-	    token=token,
-	    commit_message="Sync App files",
-	)
-
-	# Upload du modèle
-	upload_folder(
-	    repo_id=repo_id,
-	    repo_type="space",
-	    folder_path="Model",
-	    path_in_repo="Model",
-	    token=token,
-	    commit_message="Sync Model",
-	)
-
-	# Upload des résultats (metrics / plots)
-	upload_folder(
-	    repo_id=repo_id,
-	    repo_type="space",
-	    folder_path="Results",
-	    path_in_repo="Metrics",
-	    token=token,
-	    commit_message="Sync Metrics",
-	)
-	EOF
-
+# ===========================
 # ===========================
 # Pipeline complet de déploiement
 # ===========================
 deploy: hf-login push-hub
-
