@@ -1,28 +1,53 @@
 name: Continuous Integration
+
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
-  
+
 permissions: write-all
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: iterative/setup-cml@v2
-      - name: Install Packages
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup CML
+        uses: iterative/setup-cml@v2
+
+      # ---------------------------
+      # 🔧 Installer les dépendances Python
+      # ---------------------------
+      - name: Install Python Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # ---------------------------
+      # 📦 Exécuter ton make install
+      # ---------------------------
+      - name: Install Project
         run: make install
+      
+      # ---------------------------
+      # 🎨 Formatage avec Black
+      # ---------------------------
       - name: Format
         run: make format
+
       - name: Train
         run: make train
+
       - name: Evaluation
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: make eval
+
       - name: Update Branch
         env:
           NAME: ${{ secrets.USER_NAME }}
