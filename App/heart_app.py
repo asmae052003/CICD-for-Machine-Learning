@@ -1,15 +1,34 @@
 import gradio as gr
 import skops.io as sio
 
-# ===============================
-# Load the pipeline (new skops)
-# ===============================
 MODEL_PATH = "./Model/heart_pipeline.skops"
-trusted = sio.get_untrusted_types(MODEL_PATH)
-pipe = sio.load(MODEL_PATH, trusted=trusted)
+
 
 # ===============================
-# Maps because Gradio removed type="index"
+# Load pipeline (compatible anciennes / nouvelles versions)
+# ===============================
+def load_pipeline():
+    # 1) Essayer l’ancienne façon (trusted=True)
+    try:
+        return sio.load(MODEL_PATH, trusted=True)
+    except TypeError:
+        # 2) Nouvelle sécu skops : il faut d’abord charger sans trusted
+        try:
+            sio.load(MODEL_PATH)  # va lever une erreur de sécurité, c’est normal
+        except Exception:
+            # Ici skops enregistre les "untrusted types"
+            pass
+
+        # 3) On récupère les types non sûrs, puis on les passe explicitement
+        trusted_types = sio.get_untrusted_types()
+        return sio.load(MODEL_PATH, trusted=trusted_types)
+
+
+pipe = load_pipeline()
+
+
+# ===============================
+# Définitions des choix (on enlève type="index" de Gradio)
 # ===============================
 SEX = ["Female", "Male"]
 CP = ["Typical Angina", "Atypical Angina", "Non-anginal", "Asymptomatic"]
@@ -19,17 +38,33 @@ EXANG = ["No", "Yes"]
 SLOPE = ["Upsloping", "Flat", "Downsloping"]
 THAL = ["Normal", "Fixed Defect", "Reversable Defect"]
 
+
 def to_index(choice, array):
-    """Convert label → index"""
+    """Convertit un label (string) en index (int) comme avant avec type='index'."""
     return array.index(choice)
 
 
 # ===============================
-# Predict Function
+# Fonction de prédiction (on garde ta logique)
 # ===============================
-def predict_heart(age, sex, cp, trestbps, chol, fbs, restecg,
-                  thalach, exang, oldpeak, slope, ca, thal):
+def predict_heart(
+    age,
+    sex,
+    cp,
+    trestbps,
+    chol,
+    fbs,
+    restecg,
+    thalach,
+    exang,
+    oldpeak,
+    slope,
+    ca,
+    thal,
+):
+    """Predict heart disease based on patient features."""
 
+    # On reconstruit les mêmes features que ton ancien code (indices)
     features = [
         age,
         to_index(sex, SEX),
@@ -47,11 +82,12 @@ def predict_heart(age, sex, cp, trestbps, chol, fbs, restecg,
     ]
 
     prediction = pipe.predict([features])[0]
-    return f"Predicted Condition: {'Heart Disease' if prediction == 1 else 'No Disease'}"
+    label = f"Predicted Condition: {'Heart Disease' if prediction == 1 else 'No Disease'}"
+    return label
 
 
 # ===============================
-# Gradio Inputs
+# Entrées Gradio (sans type="index")
 # ===============================
 inputs = [
     gr.Slider(29, 80, step=1, label="Age"),
@@ -71,10 +107,14 @@ inputs = [
 
 outputs = [gr.Label(num_top_classes=2)]
 
-# Convert examples (index → label)
+# ===============================
+# Examples : on met les labels, pas les indices
+# ===============================
 examples = [
-    [69, SEX[1], CP[0], 160, 234, FBS[1], RESTECG[2], 131, EXANG[0], 0.1, SLOPE[1], 1, THAL[0]],
-    [60, SEX[0], CP[0], 150, 240, FBS[0], RESTECG[0], 171, EXANG[0], 0.9, SLOPE[0], 0, THAL[0]],
+    [69, "Male", "Typical Angina", 160, 234, "True",
+     "Left ventricular hypertrophy", 131, "No", 0.1, "Flat", 1, "Normal"],
+    [60, "Female", "Typical Angina", 150, 240, "False",
+     "Normal", 171, "No", 0.9, "Upsloping", 0, "Normal"],
 ]
 
 title = "Heart Disease Classification"
