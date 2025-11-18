@@ -5,30 +5,25 @@ MODEL_PATH = "./Model/heart_pipeline.skops"
 
 
 # ===============================
-# Load pipeline (compatible anciennes / nouvelles versions)
+# Load pipeline (compatible nouvelles / anciennes versions skops)
 # ===============================
 def load_pipeline():
-    # 1) Essayer l’ancienne façon (trusted=True)
     try:
-        return sio.load(MODEL_PATH, trusted=True)
-    except TypeError:
-        # 2) Nouvelle sécu skops : il faut d’abord charger sans trusted
-        try:
-            sio.load(MODEL_PATH)  # va lever une erreur de sécurité, c’est normal
-        except Exception:
-            # Ici skops enregistre les "untrusted types"
-            pass
-
-        # 3) On récupère les types non sûrs, puis on les passe explicitement
-        trusted_types = sio.get_untrusted_types()
+        # 🔹 Nouvelle méthode (skops >= 0.10)
+        trusted_types = sio.get_untrusted_types(file=MODEL_PATH)
         return sio.load(MODEL_PATH, trusted=trusted_types)
+    except TypeError:
+        # 🔹 Anciennes versions de skops (au cas où, en local par exemple)
+        try:
+            return sio.load(MODEL_PATH, trusted=True)
+        except TypeError:
+            return sio.load(MODEL_PATH)
 
 
 pipe = load_pipeline()
 
-
 # ===============================
-# Définitions des choix (on enlève type="index" de Gradio)
+# Définitions des choix (on remplace type="index")
 # ===============================
 SEX = ["Female", "Male"]
 CP = ["Typical Angina", "Atypical Angina", "Non-anginal", "Asymptomatic"]
@@ -40,12 +35,12 @@ THAL = ["Normal", "Fixed Defect", "Reversable Defect"]
 
 
 def to_index(choice, array):
-    """Convertit un label (string) en index (int) comme avant avec type='index'."""
+    """Convert a label (string) to an index (int)."""
     return array.index(choice)
 
 
 # ===============================
-# Fonction de prédiction (on garde ta logique)
+# Fonction de prédiction (même logique que ton code original)
 # ===============================
 def predict_heart(
     age,
@@ -64,7 +59,6 @@ def predict_heart(
 ):
     """Predict heart disease based on patient features."""
 
-    # On reconstruit les mêmes features que ton ancien code (indices)
     features = [
         age,
         to_index(sex, SEX),
@@ -108,13 +102,39 @@ inputs = [
 outputs = [gr.Label(num_top_classes=2)]
 
 # ===============================
-# Examples : on met les labels, pas les indices
+# Examples : on met les LABELS (sinon Gradio plante)
 # ===============================
 examples = [
-    [69, "Male", "Typical Angina", 160, 234, "True",
-     "Left ventricular hypertrophy", 131, "No", 0.1, "Flat", 1, "Normal"],
-    [60, "Female", "Typical Angina", 150, 240, "False",
-     "Normal", 171, "No", 0.9, "Upsloping", 0, "Normal"],
+    [
+        69,
+        "Male",
+        "Typical Angina",
+        160,
+        234,
+        "True",
+        "Left ventricular hypertrophy",
+        131,
+        "No",
+        0.1,
+        "Flat",
+        1,
+        "Normal",
+    ],
+    [
+        60,
+        "Female",
+        "Typical Angina",
+        150,
+        240,
+        "False",
+        "Normal",
+        171,
+        "No",
+        0.9,
+        "Upsloping",
+        0,
+        "Normal",
+    ],
 ]
 
 title = "Heart Disease Classification"
