@@ -34,4 +34,5 @@ jobs:
         env:
           NAME: ${{ secrets.USER_NAME }}
           EMAIL: ${{ secrets.USER_EMAIL }}
-        run: make update-branch USER_NAME=$NAME USER_EMAIL=$EMAIL
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # <-- Ligne Ajoutée
+        run: make update-branch USER_NAME=$NAME USER_EMAIL=$EMAIL GITHUB_TOKEN=$GITHUB_TOKEN # <-- Modifié
