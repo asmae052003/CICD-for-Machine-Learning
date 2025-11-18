@@ -10,6 +10,7 @@ if TOKEN is None:
         "Make sure the GitHub secret HF is defined and passed in cd.yml."
     )
 
+
 def upload(path: str, dest: str, message: str) -> None:
     print(f"📤 Uploading '{path}' -> '{dest}' on {REPO_ID}")
     upload_folder(
@@ -21,6 +22,7 @@ def upload(path: str, dest: str, message: str) -> None:
         commit_message=message,
     )
 
+
 def main():
     # App Gradio
     upload("App", ".", "Sync App files")
@@ -30,6 +32,7 @@ def main():
 
     # Résultats / métriques
     upload("Results", "Metrics", "Sync Metrics")
+
 
 if __name__ == "__main__":
     main()

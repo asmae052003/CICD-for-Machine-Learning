@@ -76,7 +76,9 @@ def predict_heart(
     ]
 
     prediction = pipe.predict([features])[0]
-    label = f"Predicted Condition: {'Heart Disease' if prediction == 1 else 'No Disease'}"
+    label = (
+        f"Predicted Condition: {'Heart Disease' if prediction == 1 else 'No Disease'}"
+    )
     return label
 
 
