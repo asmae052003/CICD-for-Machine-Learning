@@ -26,21 +26,22 @@ jobs:
       - name: Setup CML
         uses: iterative/setup-cml@v2
 
-      # 3) Installer toutes les dépendances Python (dont black)
-      - name: Install Python dependencies
+      # 3) Installer toutes les dépendances Python (dont Black)
+      - name: Install Packages
         run: |
           python -m pip install --upgrade pip
+          python -m pip install black
           python -m pip install -r requirements.txt
 
-      # 4) Formater le code avec Black (sans Makefile)
+      # 4) Formater le code avec Black (directement, sans Makefile)
       - name: Format code with Black
         run: python -m black .
 
-      # 5) Entraînement du modèle (utilise ton Makefile)
+      # 5) Entraînement du modèle
       - name: Train
         run: make train
 
-      # 6) Évaluation + génération du rapport CML
+      # 6) Évaluation + rapport CML
       - name: Evaluation
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
