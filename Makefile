@@ -44,24 +44,57 @@ update-branch:
 
 
 # ===========================
-# Connexion à Hugging Face
+# Connexion à Hugging Face (préparation)
 # ===========================
 hf-login:
 	git pull origin update
 	git switch update
-	pip install -U "huggingface_hub[cli]"
-	python -m huggingface_hub login --token "$(HF)" --add-to-git-credential
+	pip install -U "huggingface_hub"
 
 # ===========================
-# Déploiement sur Hugging Face Space
+# Déploiement sur Hugging Face Space (sans CLI, via API Python)
 # ===========================
 push-hub:
-	python -m huggingface_hub upload asmaegr50/Heart_Disease_Classification ./App --repo-type=space --commit-message="Sync App files"
-	python -m huggingface_hub upload asmaegr50/Heart_Disease_Classification ./Model /Model --repo-type=space --commit-message="Sync Model"
-	python -m huggingface_hub upload asmaegr50/Heart_Disease_Classification ./Results /Metrics --repo-type=space --commit-message="Sync Metrics"
+	python - << 'EOF'
+	import os
+	from huggingface_hub import upload_folder
 
+	repo_id = "asmaegr50/Heart_Disease_Classification"
+	token = os.environ["HF"]
+
+	# Upload du dossier App (app Gradio)
+	upload_folder(
+	    repo_id=repo_id,
+	    repo_type="space",
+	    folder_path="App",
+	    path_in_repo=".",
+	    token=token,
+	    commit_message="Sync App files",
+	)
+
+	# Upload du modèle
+	upload_folder(
+	    repo_id=repo_id,
+	    repo_type="space",
+	    folder_path="Model",
+	    path_in_repo="Model",
+	    token=token,
+	    commit_message="Sync Model",
+	)
+
+	# Upload des résultats (metrics / plots)
+	upload_folder(
+	    repo_id=repo_id,
+	    repo_type="space",
+	    folder_path="Results",
+	    path_in_repo="Metrics",
+	    token=token,
+	    commit_message="Sync Metrics",
+	)
+	EOF
 
 # ===========================
 # Pipeline complet de déploiement
 # ===========================
 deploy: hf-login push-hub
+
