@@ -57,10 +57,10 @@ hf-login:
 # Déploiement sur Hugging Face Space
 # ===========================
 push-hub:
-	# Remplacer par ton identifiant HF réel
-	huggingface-cli upload your-username/Heart-Classification ./App --repo-type=space --commit-message="Sync App files"
-	huggingface-cli upload your-username/Heart-Classification ./Model /Model --repo-type=space --commit-message="Sync Model"
-	huggingface-cli upload your-username/Heart-Classification ./Results /Metrics --repo-type=space --commit-message="Sync Metrics"
+	# Déploiement vers TON vrai Space Hugging Face
+	huggingface-cli upload asmaegr50/Heart_Disease_Classification ./App --repo-type=space --commit-message="Sync App files"
+	huggingface-cli upload asmaegr50/Heart_Disease_Classification ./Model /Model --repo-type=space --commit-message="Sync Model"
+	huggingface-cli upload asmaegr50/Heart_Disease_Classification ./Results /Metrics --repo-type=space --commit-message="Sync Metrics"
 
 
 # ===========================
