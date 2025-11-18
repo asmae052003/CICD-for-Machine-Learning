@@ -65,4 +65,4 @@ disp.plot()
 plt.savefig("Results/model_results.png", dpi=120)
 
 # 5. Sauvegarde du modèle
-sio.load("Model/heart_pipeline.skops")
+sio.dump(pipe, "Model/heart_pipeline.skops")
