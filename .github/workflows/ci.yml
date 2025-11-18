@@ -14,40 +14,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 0) Nettoyer complètement le workspace (au cas où)
+      - name: Clean workspace
+        run: rm -rf ./*
+
+      # 1) Récupérer le code depuis GitHub
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2) Installer CML
       - name: Setup CML
         uses: iterative/setup-cml@v2
 
-      # ---------------------------
-      # 🔧 Installer les dépendances Python
-      # ---------------------------
-      - name: Install Python Dependencies
+      # 3) Installer toutes les dépendances Python (dont black)
+      - name: Install Python dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
 
-      # ---------------------------
-      # 📦 Exécuter ton make install
-      # ---------------------------
-      - name: Install Project
-        run: make install
-      
-      # ---------------------------
-      # 🎨 Formatage avec Black
-      # ---------------------------
-      - name: Format
-        run: make format
+      # 4) Formater le code avec Black (sans Makefile)
+      - name: Format code with Black
+        run: python -m black .
 
+      # 5) Entraînement du modèle (utilise ton Makefile)
       - name: Train
         run: make train
 
+      # 6) Évaluation + génération du rapport CML
       - name: Evaluation
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: make eval
 
+      # 7) Mise à jour de la branche "update"
       - name: Update Branch
         env:
           NAME: ${{ secrets.USER_NAME }}
